@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>MULTISYSTEM</title>
+
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+
+<style>
+body{font-family:Arial;text-align:center}
+#top{margin-top:20px}
+#menu{display:none;margin-top:40px}
+#logout{position:fixed;bottom:10px;width:100%}
+</style>
+
+</head>
+
+<body>
+
+<div id="top">
+<h1 style="color:blue">JAMALI SAIDI KAZEMB</h1>
+<h2 style="color:purple">MULTISYSTEM MANAGEMENT</h2>
+</div>
+
+<div id="login">
+<button onclick="login()">LOGIN</button>
+</div>
+
+<div id="main" style="display:none">
+<button onclick="free()">FREE</button>
+<button onclick="pay()">PAYMENT</button>
+</div>
+
+<div id="menu">
+<button onclick="back()">MENU</button>
+</div>
+
+<div id="logout">
+<button onclick="logout()">LOGOUT</button>
+</div>
+
+<script>
+
+function login(){
+ google.accounts.id.initialize({
+  client_id:"105332735242-j7magp9o9b6jro86itcaek89gmp304fv.apps.googleusercontent.com",
+  callback:handle
+ })
+ google.accounts.id.prompt()
+}
+
+async function handle(r){
+
+ const res=await fetch("/verify",{
+  method:"POST",
+  headers:{"Content-Type":"application/json"},
+  body:JSON.stringify({token:r.credential})
+ })
+
+ const d=await res.json()
+
+ localStorage.token=d.token
+
+ document.getElementById("login").style.display="none"
+ document.getElementById("main").style.display="block"
+
+}
+
+function free(){
+
+ document.getElementById("main").style.display="none"
+ document.getElementById("menu").style.display="block"
+
+ countdown(180)
+
+}
+
+function pay(){
+
+ const f=document.createElement("input")
+ f.type="file"
+ f.accept="image/*"
+
+ f.onchange=async()=>{
+
+  const data=new FormData()
+  data.append("file",f.files[0])
+
+  const r=await fetch("/upload",{method:"POST",body:data})
+  const j=await r.json()
+
+  if(j.valid){
+   startTime(j.seconds)
+  }
+  else{
+   alert("invalid payment")
+  }
+
+ }
+
+ f.click()
+
+}
+
+function countdown(s){
+
+ const i=setInterval(()=>{
+  s--
+  if(s<=0){
+   clearInterval(i)
+   suspend()
+  }
+ },1000)
+
+}
+
+function startTime(sec){
+
+ document.getElementById("menu").style.display="block"
+
+ const i=setInterval(()=>{
+  sec--
+  if(sec<=0){
+   clearInterval(i)
+   suspend()
+  }
+ },1000)
+
+}
+
+function suspend(){
+
+ document.getElementById("menu").style.display="none"
+
+ setTimeout(()=>{
+  document.getElementById("main").style.display="block"
+ },86400000)
+
+}
+
+function logout(){
+ location.reload()
+}
+
+</script>
+
+</body>
+</html>
